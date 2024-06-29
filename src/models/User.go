@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/badoux/checkmail"
 )
 
 // Esta estrutura define um usuario com apenas alguns campos mais genericos
@@ -34,6 +36,11 @@ func (user *User) validate(option string) error {
 	if user.Email == "" {
 		return errors.New("obrigatório preenchimento do campo email")
 	}
+
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
+		return errors.New("email inserido em formato inválido")
+	}
+
 	if option == "register" && user.Passphrase == "" {
 		return errors.New("obrigatório preenchimento do campo senha")
 	}
