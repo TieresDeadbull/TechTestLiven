@@ -29,7 +29,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = user.Prepare(); err != nil {
+	if err = user.Prepare("register"); err != nil {
 		response.Err(w, http.StatusBadRequest, err)
 		return
 	}
@@ -83,16 +83,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, user)
 }
 
-// Função de atualização de usuário
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Updating User"))
-}
-
-// Função de deleção de usuário
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Deleting User"))
-}
-
 // Função de listagem de todos os usuários
 func ListUsers(w http.ResponseWriter, r *http.Request) {
 	db, err := db.Connect()
@@ -111,4 +101,78 @@ func ListUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusOK, users)
+}
+
+// Função de atualização de usuário
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+
+	params := mux.Vars(r)
+
+	userID, err := strconv.ParseUint(params["userId"], 10, 64)
+	if err != nil {
+		response.Err(w, http.StatusBadRequest, err)
+		return
+
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		response.Err(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	if err = json.Unmarshal(body, &user); err != nil {
+		response.Err(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err = user.Prepare("update"); err != nil {
+		response.Err(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := db.Connect()
+	if err != nil {
+		response.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	userRepo := repositories.NewUsersRepo(db)
+	err = userRepo.UpdateUser(userID, user)
+	if err != nil {
+		response.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response.JSON(w, http.StatusNoContent, nil)
+}
+
+// Função de deleção de usuário
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	userID, err := strconv.ParseUint(params["userId"], 10, 64)
+	if err != nil {
+		response.Err(w, http.StatusBadRequest, err)
+		return
+
+	}
+	db, err := db.Connect()
+	if err != nil {
+		response.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	userRepo := repositories.NewUsersRepo(db)
+	err = userRepo.DeleteUser(userID)
+
+	if err != nil {
+		response.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response.JSON(w, http.StatusNoContent, nil)
 }

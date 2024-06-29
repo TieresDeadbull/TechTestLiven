@@ -18,8 +18,8 @@ type User struct {
 
 // Função que por meio das funções validate e prepare verifica
 // o preenchimento correto dos campos do usuário recebido
-func (user *User) Prepare() error {
-	if err := user.validate(); err != nil {
+func (user *User) Prepare(option string) error {
+	if err := user.validate(option); err != nil {
 		return err
 	}
 	user.formatting()
@@ -27,18 +27,18 @@ func (user *User) Prepare() error {
 	return nil
 }
 
-func (user *User) validate() error {
+func (user *User) validate(option string) error {
 	if user.Name == "" {
-		return errors.New("Obrigatório preenchimento do campo nome")
+		return errors.New("obrigatório preenchimento do campo nome")
 	}
 	if user.Email == "" {
-		return errors.New("Obrigatório preenchimento do campo email")
+		return errors.New("obrigatório preenchimento do campo email")
 	}
-	if user.Passphrase == "" {
-		return errors.New("Obrigatório preenchimento do campo senha")
+	if option == "register" && user.Passphrase == "" {
+		return errors.New("obrigatório preenchimento do campo senha")
 	}
 	if user.PhoneNumber == "" {
-		return errors.New("Obrigatório preenchimento do campo telefone")
+		return errors.New("obrigatório preenchimento do campo telefone")
 	}
 
 	return nil
