@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,10 +18,14 @@ func CreateToken(userID uint64) (string, error) {
 	permissions["authorized"] = true
 	permissions["expire"] = time.Now().Add(time.Hour * 6).Unix()
 	permissions["userId"] = userID
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, permissions)
 	return token.SignedString([]byte(config.SecretKey))
 }
 
+// Faz o split no header de modo a remover o Bearer
+// caso esteja em um formato diferente de "Bearer xyzaasahsa..."
+// retorna string vazia, dessa forma invalidando o token na função ValidateToken
 func extractToken(r *http.Request) string {
 	token := r.Header.Get("Authorization")
 
@@ -52,4 +57,26 @@ func ValidateToken(r *http.Request) error {
 		return nil
 	}
 	return errors.New("Token inválido!!")
+}
+
+//UserFunctions
+
+// Extrai o ID salvo no token
+func ExtractUserID(r *http.Request) (uint64, error) {
+	tokenString := extractToken(r)
+	token, err := jwt.Parse(tokenString, verificationKey)
+	if err != nil {
+		return 0, err
+	}
+
+	if permissions, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userID, err := strconv.ParseUint(fmt.Sprintf("%.0f", permissions["userId"]), 10, 64)
+		if err != nil {
+			return 0, err
+		}
+		return userID, nil
+	}
+
+	return 0, errors.New("Token inválido!!")
+
 }

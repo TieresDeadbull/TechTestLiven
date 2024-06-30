@@ -19,27 +19,27 @@ var userRoutes = []Route{
 		URI:          "/user/view/{userId}",
 		Method:       http.MethodGet,
 		Function:     controllers.GetUser,
-		AuthRequired: false,
+		AuthRequired: true,
 	},
 	//Rota para atualização de dados
 	{
 		URI:          "/user/update/{userId}",
 		Method:       http.MethodPut,
 		Function:     controllers.UpdateUser,
-		AuthRequired: false,
+		AuthRequired: true,
 	},
 	//Rota para deleção de conta
 	{
 		URI:          "/user/delete/{userId}",
 		Method:       http.MethodDelete,
 		Function:     controllers.DeleteUser,
-		AuthRequired: false,
+		AuthRequired: true,
 	},
 	//Rota para vizualização de dados cadastrais todos usuarios cadastrados
 	{
 		URI:          "/users/view",
 		Method:       http.MethodGet,
 		Function:     controllers.ListUsers,
-		AuthRequired: false,
+		AuthRequired: true,
 	},
 }

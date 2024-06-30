@@ -66,12 +66,12 @@ func (usersRepo UsersRepo) GetUserByID(ID uint64) (models.User, error) {
 	return user, nil
 }
 
-// Busca usuario por email, retorna email e senha para validaçao de token
+// Busca usuario por email, retorna id e senha para validaçao de token
 func (usersRepo UsersRepo) GetUserByEmail(email string) (models.User, error) {
 
 	var user models.User
 
-	lines, err := usersRepo.db.Query("select email, passphrase from users where email = ?", email)
+	lines, err := usersRepo.db.Query("select id, passphrase from users where email = ?", email)
 
 	if err != nil {
 		return models.User{}, err
@@ -81,7 +81,7 @@ func (usersRepo UsersRepo) GetUserByEmail(email string) (models.User, error) {
 
 	if lines.Next() {
 		if err = lines.Scan(
-			&user.Email,
+			&user.ID,
 			&user.Passphrase); err != nil {
 			return models.User{}, err
 		}
@@ -130,14 +130,14 @@ func (usersRepo UsersRepo) ListAllUsers() ([]models.User, error) {
 // Edição de dados cadastrais
 func (usersRepo UsersRepo) UpdateUser(userID uint64, user models.User) error {
 	preparation, err := usersRepo.db.Prepare(
-		"update users set name=?, email=?, passphrase=?, phonenumber=? where id = ?",
+		"update users set name=?, email=?, phonenumber=? where id = ?",
 	)
 	if err != nil {
 		return err
 	}
 	defer preparation.Close()
 
-	if _, err = preparation.Exec(user.Name, user.Email, user.Passphrase, user.PhoneNumber, userID); err != nil {
+	if _, err = preparation.Exec(user.Name, user.Email, user.PhoneNumber, userID); err != nil {
 		return err
 	}
 

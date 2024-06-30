@@ -1,11 +1,14 @@
 package controllers
 
 import (
+	"api/src/auth"
 	"api/src/db"
 	"api/src/models"
 	"api/src/repositories"
 	"api/src/response"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -113,7 +116,19 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.Err(w, http.StatusBadRequest, err)
 		return
+	}
 
+	tokenUserID, err := auth.ExtractUserID(r)
+	if err != nil {
+		response.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if userID != tokenUserID {
+		fmt.Println(userID, tokenUserID)
+		response.Err(w, http.StatusForbidden,
+			errors.New("não permitida edição de outro usuário que não seja o seu"))
+		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -140,8 +155,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	userRepo := repositories.NewUsersRepo(db)
-	err = userRepo.UpdateUser(userID, user)
-	if err != nil {
+	if err = userRepo.UpdateUser(userID, user); err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -159,6 +173,20 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+
+	tokenUserID, err := auth.ExtractUserID(r)
+	if err != nil {
+		response.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if userID != tokenUserID {
+		fmt.Println(userID, tokenUserID)
+		response.Err(w, http.StatusForbidden,
+			errors.New("não permitida deleção de outro usuário que não seja o seu"))
+		return
+	}
+
 	db, err := db.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
