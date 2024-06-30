@@ -1,6 +1,7 @@
 package models
 
 import (
+	"api/src/security"
 	"errors"
 	"strings"
 	"time"
@@ -22,7 +23,9 @@ func (user *User) Prepare(option string) error {
 	if err := user.validate(option); err != nil {
 		return err
 	}
-	user.formatting()
+	if err := user.formatting(option); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -44,8 +47,17 @@ func (user *User) validate(option string) error {
 	return nil
 }
 
-func (user *User) formatting() {
+func (user *User) formatting(option string) error {
 	user.Name = strings.TrimSpace(user.Name)
 	user.Email = strings.TrimSpace(user.Email)
 	user.PhoneNumber = strings.TrimSpace(user.PhoneNumber)
+
+	if option == "register" {
+		hashedPass, err := security.Hash(user.Passphrase)
+		if err != nil {
+			return err
+		}
+		user.Passphrase = string(hashedPass)
+	}
+	return nil
 }
