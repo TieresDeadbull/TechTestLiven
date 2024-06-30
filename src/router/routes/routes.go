@@ -18,6 +18,7 @@ type Route struct {
 // Funçao que insere as rotas no router para serem entao consumidas
 func ConfigRoutes(rt *mux.Router) *mux.Router {
 	routes := userRoutes
+	routes = append(routes, addressRoutes...)
 	routes = append(routes, loginRoute)
 
 	for _, route := range routes {

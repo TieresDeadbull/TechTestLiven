@@ -42,8 +42,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(userFromDB)
-
 	if err = security.VerifyPass(userFromDB.Passphrase, user.Passphrase); err != nil {
 		response.Err(w, http.StatusUnauthorized, err)
 		return
