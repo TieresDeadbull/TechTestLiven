@@ -14,13 +14,6 @@ var userRoutes = []Route{
 		Function:     controllers.CreateUser,
 		AuthRequired: false,
 	},
-	//Rota para acesso do usuário
-	{
-		URI:          "/user/login",
-		Method:       http.MethodPost,
-		Function:     controllers.LoginUser,
-		AuthRequired: false,
-	},
 	//Rota para vizualização de dados cadastrais
 	{
 		URI:          "/user/view/{userId}",

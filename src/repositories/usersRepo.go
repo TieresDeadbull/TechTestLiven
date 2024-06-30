@@ -66,6 +66,31 @@ func (usersRepo UsersRepo) GetUserByID(ID uint64) (models.User, error) {
 	return user, nil
 }
 
+// Busca usuario por email, retorna email e senha para validaçao de token
+func (usersRepo UsersRepo) GetUserByEmail(email string) (models.User, error) {
+
+	var user models.User
+
+	lines, err := usersRepo.db.Query("select email, passphrase from users where email = ?", email)
+
+	if err != nil {
+		return models.User{}, err
+	}
+
+	defer lines.Close()
+
+	if lines.Next() {
+		if err = lines.Scan(
+			&user.Email,
+			&user.Passphrase); err != nil {
+			return models.User{}, err
+		}
+
+	}
+
+	return user, nil
+}
+
 // Listagem de todos usuários cadastrados
 func (usersRepo UsersRepo) ListAllUsers() ([]models.User, error) {
 
