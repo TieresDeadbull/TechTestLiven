@@ -41,16 +41,16 @@ func (usersRepo UsersRepo) Create(user models.User) (uint64, error) {
 func (usersRepo UsersRepo) GetUserByID(ID uint64) (models.User, error) {
 	var user models.User
 
-	lines, err := usersRepo.db.Query("select id, name, email, passphrase, phonenumber,createdAt from users WHERE id = ?", ID)
+	row, err := usersRepo.db.Query("select id, name, email, passphrase, phonenumber,createdAt from users WHERE id = ?", ID)
 
 	if err != nil {
 		return models.User{}, err
 	}
 
-	defer lines.Close()
+	defer row.Close()
 
-	if lines.Next() {
-		if err = lines.Scan(
+	if row.Next() {
+		if err = row.Scan(
 			&user.ID,
 			&user.Name,
 			&user.Email,
@@ -71,16 +71,16 @@ func (usersRepo UsersRepo) GetUserByEmail(email string) (models.User, error) {
 
 	var user models.User
 
-	lines, err := usersRepo.db.Query("select id, passphrase from users where email = ?", email)
+	rows, err := usersRepo.db.Query("select id, passphrase from users where email = ?", email)
 
 	if err != nil {
 		return models.User{}, err
 	}
 
-	defer lines.Close()
+	defer rows.Close()
 
-	if lines.Next() {
-		if err = lines.Scan(
+	if rows.Next() {
+		if err = rows.Scan(
 			&user.ID,
 			&user.Passphrase); err != nil {
 			return models.User{}, err
@@ -99,17 +99,17 @@ func (usersRepo UsersRepo) ListAllUsers() ([]models.User, error) {
 		user  models.User
 	)
 
-	lines, err := usersRepo.db.Query("select * from users")
+	rows, err := usersRepo.db.Query("select * from users")
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer lines.Close()
+	defer rows.Close()
 
-	for lines.Next() {
+	for rows.Next() {
 
-		if err = lines.Scan(
+		if err = rows.Scan(
 			&user.ID,
 			&user.Name,
 			&user.Email,
@@ -138,23 +138,6 @@ func (usersRepo UsersRepo) UpdateUser(userID uint64, user models.User) error {
 	defer preparation.Close()
 
 	if _, err = preparation.Exec(user.Name, user.Email, user.PhoneNumber, userID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Deleção de usuário
-func (usersRepo UsersRepo) DeleteUser(userID uint64) error {
-	preparation, err := usersRepo.db.Prepare(
-		"delete from users where id = ?",
-	)
-	if err != nil {
-		return err
-	}
-	defer preparation.Close()
-
-	if _, err = preparation.Exec(userID); err != nil {
 		return err
 	}
 

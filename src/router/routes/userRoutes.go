@@ -16,7 +16,7 @@ var userRoutes = []Route{
 	},
 	//Rota para vizualização de dados cadastrais
 	{
-		URI:          "/user/view/{userId}",
+		URI:          "/user/{userId}",
 		Method:       http.MethodGet,
 		Function:     controllers.GetUser,
 		AuthRequired: true,
@@ -33,13 +33,6 @@ var userRoutes = []Route{
 		URI:          "/user/delete/{userId}",
 		Method:       http.MethodDelete,
 		Function:     controllers.DeleteUser,
-		AuthRequired: true,
-	},
-	//Rota para vizualização de dados cadastrais todos usuarios cadastrados
-	{
-		URI:          "/users/view",
-		Method:       http.MethodGet,
-		Function:     controllers.ListUsers,
 		AuthRequired: true,
 	},
 }
