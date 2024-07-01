@@ -68,6 +68,20 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+
+	tokenUserID, err := auth.ExtractUserID(r)
+	if err != nil {
+		response.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if userID != tokenUserID {
+		fmt.Println(userID, tokenUserID)
+		response.Err(w, http.StatusForbidden,
+			errors.New("não permitida consulta de outro usuário que não seja o seu"))
+		return
+	}
+
 	db, err := db.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
@@ -75,35 +89,16 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	userRepo := repositories.NewUsersRepo(db)
-	user, err := userRepo.GetUserByID(userID)
+	userAddressRepo := repositories.NewUserAddressRepo(db, *repositories.NewUsersRepo(db), *repositories.NewAddressesRepo(db))
+	user, err := userAddressRepo.GetUserWithAddresses(userID)
 
+	fmt.Println(user)
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	response.JSON(w, http.StatusOK, user)
-}
-
-// Função de listagem de todos os usuários
-func ListUsers(w http.ResponseWriter, r *http.Request) {
-	db, err := db.Connect()
-	if err != nil {
-		response.Err(w, http.StatusInternalServerError, err)
-		return
-	}
-	defer db.Close()
-
-	userRepo := repositories.NewUsersRepo(db)
-	users, err := userRepo.ListAllUsers()
-
-	if err != nil {
-		response.Err(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	response.JSON(w, http.StatusOK, users)
 }
 
 // Função de atualização de usuário
@@ -194,8 +189,8 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	userRepo := repositories.NewUsersRepo(db)
-	err = userRepo.DeleteUser(userID)
+	userAddressRepo := repositories.NewUserAddressRepo(db, *repositories.NewUsersRepo(db), *repositories.NewAddressesRepo(db))
+	err = userAddressRepo.DeleteUser(userID)
 
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)

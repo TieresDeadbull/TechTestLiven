@@ -9,37 +9,37 @@ import (
 var addressRoutes = []Route{
 	//Rota para criação de endereços ainda nao cadastrado
 	{
-		URI:          "/address",
+		URI:          "/address/{userId}",
 		Method:       http.MethodPost,
 		Function:     controllers.CreateAddress,
-		AuthRequired: false,
+		AuthRequired: true,
 	},
-	//Rota para vizualização de dados cadastrais
+	//Rota para vizualização de endereços cadastrados
 	{
-		URI:          "/address/view/{addressId}",
+		URI:          "/user/address/{addressId}",
 		Method:       http.MethodGet,
 		Function:     controllers.GetAddress,
-		AuthRequired: false,
+		AuthRequired: true,
+	},
+	//Rota para vizualização de endereços cadastrados filtrados por queryParam
+	{
+		URI:          "/user/address",
+		Method:       http.MethodGet,
+		Function:     controllers.GetAddress,
+		AuthRequired: true,
 	},
 	//Rota para atualização de dados
 	{
-		URI:          "/address/update/{addressId}",
+		URI:          "/address/{userId}/update/{addressId}",
 		Method:       http.MethodPut,
 		Function:     controllers.UpdateAddress,
-		AuthRequired: false,
+		AuthRequired: true,
 	},
 	//Rota para deleção de endereço
 	{
-		URI:          "/address/delete/{addressId}",
+		URI:          "/address/{userId}/delete/{addressId}",
 		Method:       http.MethodDelete,
 		Function:     controllers.DeleteAddress,
-		AuthRequired: false,
-	},
-	//Rota para vizualização de dados cadastrais todos endereços cadastrados
-	{
-		URI:          "/addresses/view",
-		Method:       http.MethodGet,
-		Function:     controllers.ListAddresses,
-		AuthRequired: false,
+		AuthRequired: true,
 	},
 }

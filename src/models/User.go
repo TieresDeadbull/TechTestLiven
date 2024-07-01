@@ -19,7 +19,7 @@ type User struct {
 	CreatedAt   time.Time `json:"created_at, omitempty"`
 }
 
-// Função que por meio das funções validate e prepare verifica
+// Função que por meio das funções validate e formatting verifica
 // o preenchimento correto dos campos do usuário recebido
 func (user *User) Prepare(option string) error {
 	if err := user.validate(option); err != nil {
