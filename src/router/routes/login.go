@@ -5,10 +5,12 @@ import (
 	"net/http"
 )
 
+var loginController = controllers.LoginController{}
+
 var loginRoute = Route{
 	//Rota de login usuário
 	URI:          "/login",
 	Method:       http.MethodPost,
-	Function:     controllers.Login,
+	Function:     loginController.LoginUser,
 	AuthRequired: false,
 }

@@ -6,6 +6,7 @@ import (
 	"api/src/models"
 	"api/src/repositories"
 	"api/src/response"
+	"api/src/security"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,8 +17,21 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type User interface {
+	CreateUser(w http.ResponseWriter, r *http.Request)
+	GetUser(w http.ResponseWriter, r *http.Request)
+	ListUsers(w http.ResponseWriter, r *http.Request)
+	UpdateUser(w http.ResponseWriter, r *http.Request)
+	DeleteUser(w http.ResponseWriter, r *http.Request)
+}
+
+type UserController struct {
+	DB   db.DBConnector
+	Auth auth.Auth
+}
+
 // Função de cadastro de usuário
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 
@@ -32,12 +46,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = user.Prepare("register"); err != nil {
+	if err = user.Prepare("register", &security.Encrypted{}); err != nil {
 		response.Err(w, http.StatusBadRequest, err)
 		return
 	}
 
-	db, err := db.Connect()
+	db, err := u.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -54,12 +68,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusCreated, user)
 }
 
-func LoginUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Login User"))
-}
-
 // Função de busca de usuário
-func GetUser(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	userID, err := strconv.ParseUint(params["userId"], 10, 64)
@@ -68,7 +78,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	db, err := db.Connect()
+	db, err := u.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -87,8 +97,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função de listagem de todos os usuários
-func ListUsers(w http.ResponseWriter, r *http.Request) {
-	db, err := db.Connect()
+func (u *UserController) ListUsers(w http.ResponseWriter, r *http.Request) {
+	db, err := u.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -107,7 +117,7 @@ func ListUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função de atualização de usuário
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
 	params := mux.Vars(r)
@@ -118,7 +128,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenUserID, err := auth.ExtractUserID(r)
+	tokenUserID, err := u.Auth.ExtractUserID(r)
 	if err != nil {
 		response.Err(w, http.StatusUnauthorized, err)
 		return
@@ -142,12 +152,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = user.Prepare("update"); err != nil {
+	if err = user.Prepare("update", &security.Encrypted{}); err != nil {
 		response.Err(w, http.StatusBadRequest, err)
 		return
 	}
 
-	db, err := db.Connect()
+	db, err := u.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -164,7 +174,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função de deleção de usuário
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	userID, err := strconv.ParseUint(params["userId"], 10, 64)
@@ -174,7 +184,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	tokenUserID, err := auth.ExtractUserID(r)
+	tokenUserID, err := u.Auth.ExtractUserID(r)
 	if err != nil {
 		response.Err(w, http.StatusUnauthorized, err)
 		return
@@ -187,7 +197,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := db.Connect()
+	db, err := u.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return

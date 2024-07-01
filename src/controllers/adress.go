@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/src/auth"
 	"api/src/db"
 	"api/src/models"
 	"api/src/repositories"
@@ -13,8 +14,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type AddressController struct {
+	DB   db.DBConnector
+	Auth auth.Auth
+}
+
 // Função de cadastro de endereço
-func CreateAddress(w http.ResponseWriter, r *http.Request) {
+func (a *AddressController) CreateAddress(w http.ResponseWriter, r *http.Request) {
 
 	var address models.Address
 
@@ -34,7 +40,7 @@ func CreateAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := db.Connect()
+	db, err := a.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -52,7 +58,7 @@ func CreateAddress(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função de busca de endereço
-func GetAddress(w http.ResponseWriter, r *http.Request) {
+func (a *AddressController) GetAddress(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	addressID, err := strconv.ParseUint(params["addressId"], 10, 64)
@@ -61,7 +67,7 @@ func GetAddress(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	db, err := db.Connect()
+	db, err := a.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -80,8 +86,8 @@ func GetAddress(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função de listagem de todos os endereços
-func ListAddresses(w http.ResponseWriter, r *http.Request) {
-	db, err := db.Connect()
+func (a *AddressController) ListAddresses(w http.ResponseWriter, r *http.Request) {
+	db, err := a.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -100,7 +106,7 @@ func ListAddresses(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função de atualização de endereço
-func UpdateAddress(w http.ResponseWriter, r *http.Request) {
+func (a *AddressController) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 	var address models.Address
 
 	params := mux.Vars(r)
@@ -110,19 +116,6 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 		response.Err(w, http.StatusBadRequest, err)
 		return
 	}
-
-	// tokenUserID, err := auth.ExtractUserID(r)
-	// if err != nil {
-	// 	response.Err(w, http.StatusUnauthorized, err)
-	// 	return
-	// }
-
-	// if userID != tokenUserID {
-	// 	fmt.Println(userID, tokenUserID)
-	// 	response.Err(w, http.StatusForbidden,
-	// 		errors.New("não permitida edição de outro endereço que não seja o seu"))
-	// 	return
-	// }
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -135,12 +128,7 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// if err = address.Prepare("update"); err != nil {
-	// 	response.Err(w, http.StatusBadRequest, err)
-	// 	return
-	// }
-
-	db, err := db.Connect()
+	db, err := a.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return
@@ -157,7 +145,7 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função de deleção de endereço
-func DeleteAddress(w http.ResponseWriter, r *http.Request) {
+func (a *AddressController) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	addressID, err := strconv.ParseUint(params["addressId"], 10, 64)
@@ -167,20 +155,7 @@ func DeleteAddress(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	// tokenAddressID, err := auth.ExtractAddressID(r)
-	// if err != nil {
-	// 	response.Err(w, http.StatusUnauthorized, err)
-	// 	return
-	// }
-
-	// if addressID != tokenAddressID {
-	// 	fmt.Println(addressID, tokenAddressID)
-	// 	response.Err(w, http.StatusForbidden,
-	// 		errors.New("não permitida deleção de outro endereço que não seja o seu"))
-	// 	return
-	// }
-
-	db, err := db.Connect()
+	db, err := a.DB.Connect()
 	if err != nil {
 		response.Err(w, http.StatusInternalServerError, err)
 		return

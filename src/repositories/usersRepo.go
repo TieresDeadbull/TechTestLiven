@@ -5,8 +5,21 @@ import (
 	"database/sql"
 )
 
+type UserRepository interface {
+	Create(user models.User) (uint64, error)
+	GetUserByID(ID uint64) (models.User, error)
+	GetUserByEmail(email string) (models.User, error)
+	ListAllUsers() ([]models.User, error)
+	UpdateUser(userID uint64, user models.User) error
+	DeleteUser(userID uint64) error
+}
+
 type UsersRepo struct {
 	db *sql.DB
+}
+
+func (repo *UsersRepo) SetDB(db *sql.DB) {
+	repo.db = db
 }
 
 // Cria um repositorio de usuarios
@@ -15,7 +28,7 @@ func NewUsersRepo(db *sql.DB) *UsersRepo {
 }
 
 // Inserção do usuario no banco de dados
-func (usersRepo UsersRepo) Create(user models.User) (uint64, error) {
+func (usersRepo *UsersRepo) Create(user models.User) (uint64, error) {
 	preparation, err := usersRepo.db.Prepare(
 		"insert into users (name, email, passphrase, phonenumber) values (?,?,?,?)",
 	)
@@ -38,7 +51,7 @@ func (usersRepo UsersRepo) Create(user models.User) (uint64, error) {
 }
 
 // Busca usuario por ID
-func (usersRepo UsersRepo) GetUserByID(ID uint64) (models.User, error) {
+func (usersRepo *UsersRepo) GetUserByID(ID uint64) (models.User, error) {
 	var user models.User
 
 	lines, err := usersRepo.db.Query("select id, name, email, passphrase, phonenumber,createdAt from users WHERE id = ?", ID)
@@ -67,7 +80,7 @@ func (usersRepo UsersRepo) GetUserByID(ID uint64) (models.User, error) {
 }
 
 // Busca usuario por email, retorna id e senha para validaçao de token
-func (usersRepo UsersRepo) GetUserByEmail(email string) (models.User, error) {
+func (usersRepo *UsersRepo) GetUserByEmail(email string) (models.User, error) {
 
 	var user models.User
 
@@ -92,7 +105,7 @@ func (usersRepo UsersRepo) GetUserByEmail(email string) (models.User, error) {
 }
 
 // Listagem de todos usuários cadastrados
-func (usersRepo UsersRepo) ListAllUsers() ([]models.User, error) {
+func (usersRepo *UsersRepo) ListAllUsers() ([]models.User, error) {
 
 	var (
 		users []models.User
@@ -128,7 +141,7 @@ func (usersRepo UsersRepo) ListAllUsers() ([]models.User, error) {
 }
 
 // Edição de dados cadastrais
-func (usersRepo UsersRepo) UpdateUser(userID uint64, user models.User) error {
+func (usersRepo *UsersRepo) UpdateUser(userID uint64, user models.User) error {
 	preparation, err := usersRepo.db.Prepare(
 		"update users set name=?, email=?, phonenumber=? where id = ?",
 	)
@@ -145,7 +158,7 @@ func (usersRepo UsersRepo) UpdateUser(userID uint64, user models.User) error {
 }
 
 // Deleção de usuário
-func (usersRepo UsersRepo) DeleteUser(userID uint64) error {
+func (usersRepo *UsersRepo) DeleteUser(userID uint64) error {
 	preparation, err := usersRepo.db.Prepare(
 		"delete from users where id = ?",
 	)

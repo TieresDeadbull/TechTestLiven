@@ -9,6 +9,10 @@ import (
 	"github.com/badoux/checkmail"
 )
 
+type SafeUser interface {
+	PreparePrepare(option string, security security.Security)
+}
+
 // Esta estrutura define um usuario com apenas alguns campos mais genericos
 type User struct {
 	ID          uint64    `json:"id,omitempty"`
@@ -21,11 +25,11 @@ type User struct {
 
 // Função que por meio das funções validate e prepare verifica
 // o preenchimento correto dos campos do usuário recebido
-func (user *User) Prepare(option string) error {
+func (user *User) Prepare(option string, security security.Security) error {
 	if err := user.validate(option); err != nil {
 		return err
 	}
-	if err := user.formatting(option); err != nil {
+	if err := user.formatting(option, security); err != nil {
 		return err
 	}
 
@@ -54,7 +58,7 @@ func (user *User) validate(option string) error {
 	return nil
 }
 
-func (user *User) formatting(option string) error {
+func (user *User) formatting(option string, security security.Security) error {
 	user.Name = strings.TrimSpace(user.Name)
 	user.Email = strings.TrimSpace(user.Email)
 	user.PhoneNumber = strings.TrimSpace(user.PhoneNumber)

@@ -18,7 +18,7 @@ func Logger(nextFunc http.HandlerFunc) http.HandlerFunc {
 // Verifica se usuario está autenticado para acessar a rota que exige esse requisito
 func Authentication(nextFunc http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := auth.ValidateToken(r); err != nil {
+		if err := auth.Auth.ValidateToken(&auth.JWTAuth{}, r); err != nil {
 			response.Err(w, http.StatusUnauthorized, err)
 			return
 		}

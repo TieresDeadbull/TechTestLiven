@@ -8,7 +8,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func Connect() (*sql.DB, error) {
+type DBConnector interface {
+	Connect() (*sql.DB, error)
+}
+
+type MSQL struct {
+}
+
+func (m *MSQL) Connect() (*sql.DB, error) {
 	db, err := sql.Open("mysql", config.ConectionString)
 	if err != nil {
 		fmt.Println("Erro ao tentar abrir o Banco de Dados")
